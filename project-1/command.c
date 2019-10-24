@@ -96,10 +96,11 @@ void copyFile(char *sourcePath, char *destinationPath) {
 	}
 	int in_file = open(sourcePath, O_RDONLY);
 	int end = strlen(sourcePath);
+	int i;
 	char *newDestination = (char *)malloc(sizeof(char) * 1000);;
 	strcpy(newDestination, destinationPath);
 	strcat(newDestination, "/");
-	for(int i = end; i > 0; i--){
+	for(i = end; i > 0; i--){
 		if(&sourcePath[i] == "/"){
 			strcat(newDestination, sourcePath + strlen(sourcePath) - i);
 			break;

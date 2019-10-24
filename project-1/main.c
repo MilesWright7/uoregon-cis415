@@ -79,11 +79,12 @@ int main(int argc, char *argv[]) {
 	int token_count, token_index;
 	char **token_array;
 	int running = 1;
+	int i;
 	/* Allocate memory for the input buffer. */
 	
 	input = (char *)malloc(sizeof(char) * size);
 	token_array = (char **)malloc(sizeof(char *) * 100);
-	for(int i =0; i < 100; i++){
+	for(i =0; i < 100; i++){
 		token_array[i] = malloc(sizeof(char) * 100);
 	}
 
@@ -347,7 +348,7 @@ int main(int argc, char *argv[]) {
 	if(mode == 2){
 		fclose(in_file);
 	}
-	for(int i = 0; i < 100; i++){
+	for(i = 0; i < 100; i++){
 		free(token_array[i]);
 	}
 	free(token_array);
@@ -384,7 +385,7 @@ int isCommand(char *string){
 	else if((strcmp(string, "pwd\n") == 0) || (strcmp(string, "pwd") == 0)) {
 		return 1;
 	}
-	else if((strcmp(string, "mkdir\n") == 0) || (strcmp(string, "mkdir") == 0)) {
+else if((strcmp(string, "mkdir\n") == 0) || (strcmp(string, "mkdir") == 0)) {
 		return 1;
 	}
 	else if((strcmp(string, "cd\n") == 0) || (strcmp(string, "cd") == 0)) {
