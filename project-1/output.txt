@@ -1,0 +1,8 @@
+/home/miles/uoregon-cis415/project-1
+/home/miles/uoregon-cis415/project-1/test
+. .. 
+/home/miles/uoregon-cis415/project-1/test
+. .. del.txt 
+. .. 
+/home/miles/uoregon-cis415/project-1
+. .. Makefile command.c command.h command.o input.txt main.c main.o output.txt pseudo-shell test 
