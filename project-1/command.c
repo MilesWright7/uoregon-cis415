@@ -129,6 +129,7 @@ void copyFile(char *sourcePath, char *destinationPath) {
 	close(in_file);
 	close(out_file);
 	free(buff);
+	free(newDestination);
 }
 
 void moveFile(char *sourcePath, char *destinationPath) {
