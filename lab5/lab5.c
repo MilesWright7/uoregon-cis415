@@ -32,7 +32,7 @@ int	 main()
 	pid_t w;
 	int wstatus, i;
 	i=0;
-	for(i = 0; i < 5; i++){
+	for(i = 0; i < 2; i++){
 		pid[i] = fork();
 	
 		if (pid[i] == 0) {
@@ -40,7 +40,7 @@ int	 main()
 			signal_init();
 			while(1) {
 				i++;
-				if(i%10000000) {
+				if(i%10000) {
 					printf("	Child Process: %i - Running infinite loop...\n", getpid());
 					i=0;
 				}
@@ -50,10 +50,13 @@ int	 main()
 		}
 	}	
 	printf("Parent Process: %i, Waiting for child to finish...\n", getpid());
-	send_signal(pid, 5, SIGUSR1);
-	send_signal(pid, 5, SIGUSR1);
-	send_signal(pid, 5, SIGINT);
-	for(i = 0; i < 5; i++){
+	sleep(1);
+	send_signal(pid, 2, SIGUSR1);
+	sleep(1);
+	send_signal(pid, 2, SIGUSR1);
+	sleep(1);
+	send_signal(pid, 2, SIGINT);
+	for(i = 0; i < 2; i++){
 		w = waitpid(pid[i], &wstatus, WUNTRACED | WCONTINUED);
 	}
 	printf("All child processes joined. Exiting.\n");
@@ -65,9 +68,17 @@ void signal_init(){
 	sigaction(SIGUSR1, &sigact, NULL);
 }
 void signal_handler(int signal){
-	sigset_t *set;
+	sigset_t set;
+	//sigemptyset(&set);
+	sigaddset(&set, SIGUSR1);
 	printf("Child Process: %d - Received signal: %d\n", getpid(), signal);
-	sigwait(set, &signal);
+	if(signal == SIGUSR1){
+		
+		sigwait(&set, &signal);
+	}
+	else if(signal == SIGINT){
+		exit(-1);
+	}
 }
 void send_signal(pid_t *pool, int size, int sig){
 	int j = 0;
