@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <signal.h>
-
+#include <time.h>
 
 int main()
 {
@@ -21,17 +21,21 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 	else if(pid == 0){
-		while(i < 10){
+		time_t start, end;
+		double running = 0;
+		start = time(NULL);
+		while(running < 10.0){
+			end = time(NULL);
+			running = difftime(end, start);
 
-			printf("    Child Process %d - Still alive after for %d seconds.\n", getpid(), i);
-			i++;
-			sleep(1);
+			printf("    Child Process %d - Still alive after for %.1f seconds.\n", getpid(), running);
+			usleep(100000);
 		}
 		exit(EXIT_SUCCESS);
 	}
 	else if(pid > 0){
 		printf("Parent %d sending signals to children.\n", getpid());
-		while(pid > 0){
+		while(waitpid(pid, &wstatus, WNOHANG) == 0){
 			sleep(1);
 			kill(pid, SIGSTOP);
 			sleep(3);
