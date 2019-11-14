@@ -17,6 +17,9 @@
 #include <signal.h>
 
 /*function declarations*/
+
+pid_t pid[10];
+int currentProgram, programCount;
 void signal_handler(int signal);
 void signal_init();
 struct sigaction sigact;
@@ -45,13 +48,12 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	pid_t pid[10];
 	char *arguments[5];
 	size_t size = 100;
 	char *input = (char *)malloc(sizeof(char) * size);
 	char *token = (char *)malloc(sizeof(char) * size);
-	int i, argCount, wstatus, rstatus, sig, currentProgram;
-	int programCount = 0;
+	int i, argCount, wstatus, rstatus, sig, cycle;
+	programCount = 0;
 	int ammount = 1;
 	sigset_t set;
 
@@ -105,12 +107,14 @@ int main(int argc, char *argv[]){
 	// wait for all to finish
 	sleep(2);
 	printf("Parent created all children. Sending start signal.\n");
-	
+	signal_init();
+	sigemptyset(&set);
+	sigaddset(&set, SIGALRM);
 	currentProgram = 0;
 	send_signal(pid, programCount, SIGUSR1);
 	sleep(1);
 	
-	for(i = 0; i < programCount, i ++){
+	for(i = 0; i < programCount; i ++){
 		if(i == currentProgram){
 			// do nothing
 		}
@@ -119,15 +123,36 @@ int main(int argc, char *argv[]){
 		}
 	}
 	// all programs stopped except for first one
+	printf("Starting process %d\n", pid[0]);
+	alarm(3);
+	sigwait(&set, &sig);
+	while(some_running(pid, programCount)){
+		if(cycle == 0){
+			printf("Stopping process %d\n", pid[currentProgram % programCount]);
+			kill(pid[currentProgram % programCount], SIGSTOP);
+		}
+		currentProgram++;
+		if(waitpid(pid[currentProgram % programCount], &wstatus, WNOHANG) == 0){
+			printf("Starting process %d\n", pid[currentProgram % programCount]);
+			kill(pid[currentProgram % programCount], SIGCONT);
+			alarm(3);
+			sigwait(&set, &sig);
+			cycle = 0;
+		}
+		else{
+			cycle++;
+			if(cycle == 2 * programCount){
+				printf("All processes are finished.\n");
+				break;
+			}
+		}
 		
-	send_signal(pid, programCount, SIGCONT);
-	sleep(1);
 
-	for(i = 0; i < programCount; i++){
-		ended = waitpid(pid[i], &wstatus, WUNTRACED);
-	   	printf("Child %d finished executing.\n", ended);
 	}
-	printf("All children finished.\n");
+
+			
+		
+
 
 	free(input);
 	free(token);
@@ -136,11 +161,27 @@ int main(int argc, char *argv[]){
 void signal_init(){
 	sigact.sa_handler = signal_handler;
 	sigaction(SIGUSR1, &sigact, NULL);
+	sigaction(SIGALRM, &sigact, NULL);
 }
 
 void signal_handler(int signal){
+	
 	printf("Child Process: %d - Received signal: %d\n", getpid(), signal);
+	if(signal == SIGALRM){
+		//printf("Process %d recieved signal %d\n", getpid(), signal);
+		int i;
+		printf("Stopping process %d\n", pid[currentProgram % programCount]);
+		kill(pid[currentProgram % programCount], SIGSTOP);
+		currentProgram++;
+		printf("Stopping process %d\n", pid[currentProgram % programCount]);
+		kill(pid[currentProgram % programCount], SIGCONT);
+		alarm(3);
+
+
+	}
+
 }
+
 
 void send_signal(pid_t *pool, int size, int sig){
 	int j = 0;
@@ -152,9 +193,9 @@ void send_signal(pid_t *pool, int size, int sig){
 }
 
 int some_running(pid_t *pool, int size){
-	int j;
+	int j, wstatus;
 	for( j = 0; j < size; j++){
-		if(waitpid(pool[j], WNOHANG) == 0){
+		if(waitpid(pool[j], &wstatus, WNOHANG) == 0){
 			return 1;
 		}
 	}
